@@ -30,22 +30,6 @@
 
 namespace {
 
-static QLineEdit* findBackLineEdit(const QObject* root) {
-    if (!root) return nullptr;
-    if (auto le = root->findChild<QLineEdit*>("lineBackPath")) return le;
-    if (auto le = root->findChild<QLineEdit*>("editBackPath")) return le;
-    return nullptr;
-}
-
-static QString readBackPath(const QObject* root) {
-    if (auto le = findBackLineEdit(root)) return le->text().trimmed();
-    return QString();
-}
-
-static void setBackPath(QObject* root, const QString& path) {
-    if (auto le = findBackLineEdit(root)) le->setText(path);
-}
-
 // (inside your existing anonymous namespace)
 static QImage cropToContentSmart(const QImage &src, int alphaThreshold = 8)
 {
@@ -160,18 +144,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-// Reads a numeric value from a widget named `objName`,
-// trying QDoubleSpinBox first, then QSpinBox. Falls back if missing.
-static qreal readNumericSpin(QWidget* root, const char* objName, qreal fallback)
-{
-    if (auto *ds = root->findChild<QDoubleSpinBox*>(objName))
-        return ds->value();
-    if (auto *is = root->findChild<QSpinBox*>(objName))
-        return is->value();
-    return fallback;
-}
-
-
 // --- Helper: find ImageMagick binary ("magick" preferred; fall back to "convert")
 static QString findImageMagick()
 {
@@ -196,22 +168,6 @@ static QImage makeSquareCanvas(const QImage &src, int sizePx, const QColor &bg)
     p.drawImage(QRect(topLeft, scaled), src);
     p.end();
     return canvas;
-}
-
-// --- Helper: rotate around center, returning a size-stable square (so GIF frame dims are identical)
-static QImage rotateSquare(const QImage &square, qreal degrees, const QColor &bg)
-{
-    const int S = square.width(); // square assumed
-    QImage out(S, S, QImage::Format_ARGB32_Premultiplied);
-    out.fill(bg);
-    QPainter p(&out);
-    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
-    p.translate(S/2.0, S/2.0);
-    p.rotate(degrees);
-    p.translate(-S/2.0, -S/2.0);
-    p.drawImage(0, 0, square);
-    p.end();
-    return out;
 }
 
 // --- Helper: write frames as PNGs to framesDir (frame_0000.png, frame_0001.png, …)
@@ -1127,10 +1083,11 @@ QString MainWindow::pickImageWithPreview(const QString &startDir)
     QObject::connect(&dlg, &QFileDialog::directoryEntered, &dlg,
         [&](){ QTimer::singleShot(0, &dlg, styleAndFocusViews); });
 
-    if (dlg.exec() == QDialog::Accepted && !dlg.selectedFiles().isEmpty())
-        return dlg.selectedFiles().first();
+    const QStringList files = dlg.selectedFiles();
+    if (dlg.exec() == QDialog::Accepted && !files.isEmpty())
+    return files.constFirst();   // no detach, read-only ref
     return {};
-}
+    }
 
 void MainWindow::on_btnGenerate_clicked()
 {
@@ -1174,10 +1131,6 @@ void MainWindow::on_btnGenerate_clicked()
     const qreal yawRotations = ui->spinYawMax   ? qMax<qreal>(0.0, ui->spinYawMax->value()) : 1.0;
     const bool  flipAnimate  = wantFlip; // checkbox removed; animate when Flip is chosen
     const int   flipCycles   = ui->spinYawMax_2 ? qMax(1, (int)ui->spinYawMax_2->value())   : 1;
-
-    // Globe params
-    const qreal globeRotations = ui->spinGlobeRotations ? ui->spinGlobeRotations->value() : 1.0;
-    const qreal globeZoomPct   = ui->spinGlobeZoom      ? ui->spinGlobeZoom->value()      : 100.0;
 
     // >>> Speed derived from FRACTIONAL seconds per revolution
     const double zDegPerSec = 360.0 / durationSecF;   // e.g., 0.5s/rev => 720 deg/sec (fast!)
