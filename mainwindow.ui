@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>950</width>
-    <height>550</height>
+    <height>723</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -469,7 +469,7 @@
            <number>1</number>
           </property>
           <property name="minimum">
-           <double>1.000000000000000</double>
+           <double>0.100000000000000</double>
           </property>
           <property name="maximum">
            <double>25.000000000000000</double>
@@ -517,6 +517,36 @@
        </layout>
       </item>
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QRadioButton" name="radioSimBackfaceUpsideDown">
+          <property name="text">
+           <string>Use Generated Backside For Flip</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioSimBackface">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Use Generated Backside For Spin</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <property name="autoExclusive">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
        <widget class="Line" name="line">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
@@ -525,6 +555,12 @@
       </item>
       <item>
        <widget class="QLabel" name="label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="styleSheet">
          <string notr="true">font: 700 12pt &quot;Noto Sans&quot;;</string>
         </property>
@@ -630,9 +666,6 @@
          </widget>
         </item>
        </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2"/>
       </item>
       <item>
        <widget class="QPushButton" name="btnGenerate">
